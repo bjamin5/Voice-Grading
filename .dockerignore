@@ -1,0 +1,7 @@
+.git
+.gitignore
+.idea
+__pycache__
+.pytest_cache
+.ipynb_checkpoints
+templates/new_page_template.html

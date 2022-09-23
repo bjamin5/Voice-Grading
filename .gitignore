@@ -1,0 +1,17 @@
+#VSCODE STUFF
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# Custom things to ignore
+__pycache__
+__pycache__/*
+
+.ipynb_checkpoints/*
+__init__.py

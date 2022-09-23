@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block head %}
+	{{ super() }}
+{% endblock %}
+
+{% block title %}Unauthorized{% endblock %}
+
+
+{% block navbar %}
+	<img class="page-logo" src="/static/images/logo.svg">
+{% endblock %}
+
+{% block page_title %}
+	{{ super() }}
+	<span class="center">{{ title }}</span>
+{% endblock %}
+
+<!--Each of these should pass whatever they receive up through the inheritance tree to layout.html-->
+{% block content %}
+	<p class="center">{{ message }}</p>
+{% endblock %}
+
+{% block footer %}{{ super() }}{% endblock %}
+
+<!--Render Javascript-->
+{% block scripts %}
+{% endblock %}

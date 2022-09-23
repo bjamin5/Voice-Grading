@@ -1,0 +1,172 @@
+{% extends "app-specific.html" %}
+{% block title %}Trainer{% endblock %}
+{% block page_title %}Text Classification - Trainer{% endblock %}
+{% block head %}{{ super() }}{% endblock %}
+
+{% block content %}
+	<div class="button-wrapper">
+		<div class="extra-buttons">
+			<button type="button" id="create-entry-button" class="btn btn-primary" data-toggle="modal" data-target="#create-entry-modal">Create Entry</button>
+		</div>
+	</div>
+
+	<div class="keyword-search-bar">
+		<form action="javascript:getTopics(currentAppId, $('#search-bar').val())">
+			<div class="search-bar-div">
+				<input type="text" class="form-control" id="search-bar" placeholder="Search for a topic by keyword..." spellcheck="true" />
+				<button type="submit">Search</button>
+			</div>
+		</form>
+		<h4 id="search-bar-notification"></h4>
+	</div>
+
+	<div class="needs-reassigning-card-location" id="needs-reassigning-card-location">
+		<table class="category-table" id="needs-reassigning-card-table">
+			<thead><tr><th></th></tr></thead>
+			<tbody class="needs-reassigning-table-body" id="needs-reassigning-table-body"></tbody>
+		</table>
+	</div>
+
+	<div class="categories-tables" id="categories-tables"></div>
+
+	<!--Create Entry Modal-->
+	<div class="modal fade" id="create-entry-modal" tabindex="-1" aria-labelledby="create-entry-modal" aria-hidden="true">
+		<div class="modal-dialog modal-dialog-large">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="create-entry-modal-label">Create Entry</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal('create-entry-modal')">&times;</button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<label for="create-entry-text">Entry Text</label>
+							<textarea class="form-control" id="create-entry-text" name="create-entry-text" rows="7" maxlength="2500"></textarea>
+							<span><span class="text-area-length"></span> of 2500</span>
+						</div>
+						<div class="form-group">
+							<label for="entry-create-category-select">Select Category</label>
+							<select class="form-control" aria-label="With textarea" name="entry-create-category-select" id="entry-create-category-select"></select>
+						</div>
+						<div class="form-group">
+							<label for="entry-create-topic-select">Select Topic</label>
+							<select class="form-control" aria-label="With textarea" name="entry-create-topic-select" id="entry-create-topic-select"></select>
+						</div>
+						<div class="form-group tooltip-group">
+							<div class="not-tooltip">
+								<label for="create-entry-reviewed">Reviewed</label>
+								<input type="checkbox" name="create-entry-reviewed" id="create-entry-reviewed" />
+							</div>
+							<div class="help-tooltip" id="entry-create-reviewed-tooltip" data-tooltip-type="entry-reviewed">?</div>
+						</div>
+						<div class="form-group">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal('create-entry-modal')">Close</button>
+							<button type="button" class="btn btn-primary" id="create-new-entry">Create</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--Auto Response Modal-->
+	<div class="modal fade" id="auto-response-modal" tabindex="-1" aria-labelledby="auto-response-modal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="auto-response-modal-label">Auto Response - Topic ID: <span class="form-control-topic-or-category-id" id="auto-response-topic-id"></span></h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal('auto-response-modal')">&times;</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<p id="auto-response-topic"></p>
+					</div>
+					<div class="form-group">
+						<h6>Auto Response</h6>
+						<p aria-label="With textarea" id="auto-response"></p>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal('auto-response-modal')">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--Instructions Modal-->
+	<div class="modal fade" id="instructions-modal" tabindex="-1" aria-labelledby="instructions-modal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="instructions-modal-label"><span id="instructions-modal-title">Instructions</span> - Topic ID: <span class="form-control-topic-or-category-id" id="instructions-topic-id"></span></h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal('instructions-modal')">&times;</button>
+				</div>
+				<div class="modal-body">
+					<div class="form-group">
+						<p id="instructions-topic"></p>
+					</div>
+					<div class="form-group">
+						<h6 id="instructions-label">Instructions</h6>
+						<p aria-label="With textarea" id="instructions"></p>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal('instructions-modal')">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block footer %}{{ super() }}{% endblock %}
+
+<!--Render Javascript-->
+{% block scripts %}
+	<script charset="utf-8">
+		$(document).ready(function(){
+			getTopics({{ app_data.app_id|tojson }})
+			document.getElementById('create-entry-button').addEventListener("click", () => {
+				let defaultCategoryId = document.querySelectorAll(".category-table-normal")[0].getAttribute("id").split('-category-table')[0]
+				showCreateEntryModal(defaultCategoryId, null)
+			})
+			document.getElementById('entry-create-category-select').addEventListener("change", () => {
+				createTopicDropdown('entry-create-topic-select', $("#entry-create-category-select").val(), null)
+			})
+			document.getElementById('create-new-entry').addEventListener("click", async () => {
+				if ($("#create-entry-text").val().trim() !== "" && $("#entry-create-topic-select").val() !== 'default') {
+					if (await isValidLength($("#create-entry-text").val(), 'Entry Text')) {
+						createNewEntry(false)
+						addCreatedEntryStatToCard($("#entry-create-topic-select").val())
+					}
+				} else {
+					await alertAction('The Entry Text field cannot be blank and a Topic must be selected.')
+				}
+			})
+		});
+
+		function createCategoryTable(topic) {
+			return (`<table class="category-table category-table-normal" id="${topic.category_id}-category-table">`
+					+ `<thead class="table-header" id="${topic.category_id}-table-header"><tr class="home-header-row"><th>${topic.category_name}</th>`
+					+ `<th><span id="${topic.category_id}-accordion-flag" hidden>Hide</span></th><th class="accordion-icon" id="${topic.category_id}-accordion-icon">&plus;</th>`
+					+ `</tr></thead>`
+					+ `<tbody class="category-table-body" id="${topic.category_id}-category-table-body"></tbody>`
+					+ `</table>`)
+		}
+
+		function createTopicCard(topic) {
+			let buttonGroup = `<div class="btn-group" role="group" id="${topic.topic_id}-button-group">`
+			if (currentAppId === 1) {
+				buttonGroup += `<button type="button" class="btn btn-outline-secondary" onclick="showAutoResponse('${topic.topic_id}', '${topic.topic_name}')" id="topic-auto-response-button">Auto Response</button>` +
+					`<button type="button" class="btn btn-outline-secondary" onclick="showInstructions('${topic.topic_id}', '${topic.topic_name}', 'Instructions')" id="topic-instructions-button">Instructions</button>`
+			} else {
+				buttonGroup += `<button type="button" class="btn btn-outline-secondary" onclick="showInstructions('${topic.topic_id}', '${topic.topic_name}', 'Description')" id="topic-instructions-button">Description</button>`
+			}
+				buttonGroup += `<button type="button" class="btn btn-success" onclick="openEntriesPage(${topic.topic_id}, 'all')" id="home-open-entries-page">See Entries</button></div>`
+			return (`<tr class="accordion-${topic.category_id}-card" hidden>` +
+					    `<td><p class="topic-name" id="${topic.topic_id}">${topic.topic_name}</p></td>` +
+						`<td><span id="${topic.topic_id}-entry-info"><p><span class="entry-list" id="${topic.topic_id}-total">${topic.entries_count}</span> ${topic.entries_count === 1 ? "Entry" : "Entries"}</p></span></td>` +
+						`<td>${buttonGroup}</td>` +
+					`</tr>`)
+		}
+	</script>
+{% endblock %}

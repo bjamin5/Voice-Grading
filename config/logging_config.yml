@@ -1,0 +1,29 @@
+version: 1
+disable_existing_loggers: no
+formatters:
+  simple: #The vanilla way of logging
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  json: #The better way of error logging
+    format: "{\"timestamp\": %(asctime)s, \"name\": %(name)s, \"logLevel\": %(levelname)s, \"message\": %(message)s}"
+  accessLog: #Format for the Access Logs
+    format: '{"ip_address": %(h)s, "response_code": %(s)s, "request_method": %(m)s, "request_path": "%(U)s", "request_querystring": "%(q)s", "request_timetaken": %(D)s, "response_length": %(B)s}'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: json
+    stream: ext://sys.stdout
+  error:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: json
+    stream: ext://sys.stderr
+loggers:
+  gunicorn.error:
+    level: INFO
+    handlers: [error]
+    propagate: no
+root:
+  level: INFO
+  handlers: [console]
+accessLog: "-"

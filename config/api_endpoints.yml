@@ -1,0 +1,3 @@
+# K8s URLs
+kubernetes_liveness_check: '/healthz'
+kubernetes_readiness_check: '/readyz'
