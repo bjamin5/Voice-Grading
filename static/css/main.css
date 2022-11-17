@@ -1,0 +1,84 @@
+body{
+    margin: 0 0 2.5em;
+}
+
+.bold{
+    font-weight: bold;
+    color: darkblue;
+}
+
+.btn{
+    margin: .6em 0;
+}
+
+.btn-group{
+    float: right;
+}
+
+.button-wrapper{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.navbar{
+    background-color: #849974;
+    padding-left: 1em;
+}
+
+.page-header{
+	margin: 1em 0;
+    display: flex;
+    align-items: flex-start;
+}
+
+.page-logo{
+    height: 2.3em;
+}
+
+footer{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 5vh;
+    background-color: #FFFFFF;
+}
+
+/* Entries */
+.entry-card {
+    display: flex;
+}
+.entry {
+    padding: .25em;
+    width: 100%;
+}
+
+/* CARDS */
+.card{
+    margin: 0;
+    min-height: 100px;
+}
+
+.card-body{
+    display: flex;
+    justify-content: space-between;
+}
+
+.card-header{
+    display: flex;
+    justify-content: space-between;
+}
+
+.reviews-table {
+    height: 30rem;
+    display: block;
+    overflow-y: scroll;
+}
+
+.reviews-table-container {
+    border-radius: 15px;
+    border-color: #613A43;
+    border-width: 5px;
+    padding: 20px
+}

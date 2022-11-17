@@ -1,62 +1,55 @@
 import os
 import constants
-import logging
-from flask_cors import CORS
-from flask import Flask, render_template, jsonify, request, redirect, url_for, abort, session
-from sys import exit
-from config import config_dict
+import json
+import pandas as pd
+import pdb
 
+from flask import Flask, make_response, render_template, jsonify, request
+from utils import Review
+import utils
+
+cached_reviews = []
 
 def create_app(testing=False):
-    app = Flask('voicegrading')
-    CORS(app)
+    app = Flask(__name__)
 
-    if __name__ != '__main__':
-        # Init logging, promethius, gunicorn things here...
-        pass
-
-    ### MAIN ROUTES ###
-    @app.route(constants.MAIN_DASHBOARD_URL)
+    @app.route('/', methods=['GET'])
     def main_dashboard():
-        return 'Hello, from Flask!'
+        return render_template('home.html')
 
-    ### Error Handling Endpoints ###
+    @app.route('/load_reviews', methods=['POST'])
+    def load_reviews():
+        if request.method == 'POST':
+            global cached_reviews
+            cached_reviews = []
+            raw_list = utils.load_reviews_from_aws()
+            for r in raw_list:
+                cached_reviews.append(Review(r))
+            
+            return make_response(str(len(cached_reviews)))
 
-    @app.errorhandler(403)
-    def forbidden(error):
-        return render_template('error.html', message=error.description.get('message', ''), title=error.description.get('title', 'Forbidden'))
+    @app.route('/get_cached_reviews', methods=['GET'])
+    def get_cached_reviews():
+        global cached_reviews
+        if cached_reviews is None:
+            return make_response('')
 
-    @app.errorhandler(401)
-    def unauthorized(error):
-        url_redirect = session.get('url_redirect', '/')
-        session['message'] = error.description.get('message', '')
-        # Need to find a way to pass the url_redirect into here
-        return redirect(url_for('sign_in'))
-        # return render_template('sign-in.html', message=error.description['message'], url_redirect=url_redirect)
+        if request.method == 'GET':
+            prep_reviews = [r.serialize_to_json() for r in cached_reviews]
+            return make_response(jsonify(prep_reviews))
 
-    @app.errorhandler(404)
-    def page_not_found(error):
-        return render_template('error.html', message=error.description.get('message', ''), title=error.description.get('title', '404'))
+    # this health check is for kubernetes to make sure the container is up and running.
+    @app.route(constants.KUBERNETES_LIVENESS_CHECK, methods=['GET'])
+    def healthz():
+        return make_response({'message': 'app is up and running'})
 
-    ### MAIN ROUTES ###
-    # @app.route(constants.MAIN_HOME_URL)
-    # # @token_required
-    # def main_home():
-    #     return redirect(f'/{(session["username"])}')
+    # this readiness check is for kubernetes to make sure the container is ready to receive requests.
+    @app.route(constants.KUBERNETES_READINESS_CHECK , methods=['GET'])
+    def readyz():
+        return make_response({'message': 'app is ready to receive connections'})
 
-    # @app.route(constants.HOME_URL)
-    # # @token_required
-    # @app_access
-    # def home(app_name):
-    #     if app_name in constants.APP_NAMES:
-    #         return render_template('home.html', app_data=get_app_data(app_name)) # What does app_data pass in?
-    #     else:
-    #         return abort(404, {'message': 'Page Not Found'})
     return app
 
-
-# This is only for local debugging. The flask server (app.run()) is not suitable for production.
-if __name__ == '__main__':
-    voice_grade_app = create_app(True)
-    # voice_grade_app.run(host='0.0.0.0', port=8080, debug=True)
-    voice_grade_app.run(host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app = create_app(True)
+    app.run(host='0.0.0.0', port=8080, debug=True)

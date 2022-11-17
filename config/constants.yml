@@ -1,0 +1,4 @@
+SECRETS_DIR: 'secrets' #this is /secrets in k8s. We use just 'secrets' here for convenience when running locally.
+SECRETS_CONFIG_KEY_NAME: 'SECRETS'
+ldap_server_url: 'prvDC01.taxhawk.com'
+ldap_domain: 'TAXHAWK'

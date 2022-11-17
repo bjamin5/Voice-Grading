@@ -1,7 +1,0 @@
-ports:
-  app: 8080
-  metrics: 8081
-workers: 2
-logLevel: "INFO"
-workerTempDirectory: "/dev/shm"
-workerClass: "gevent"
